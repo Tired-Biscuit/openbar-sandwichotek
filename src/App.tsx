@@ -1,27 +1,29 @@
-import React, { useState, useRef, useEffect  } from 'react';
-import { 
-  LayoutDashboard, 
-  ShoppingCart, 
-  Utensils, 
-  Factory, 
-  HelpCircle, 
-  LogOut, 
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  Menu,
+  X,
+  LayoutDashboard,
+  ShoppingCart,
+  Utensils,
+  Factory,
+  HelpCircle,
+  LogOut,
   Search,
-  Bell, 
-  Settings, 
-  PlusCircle, 
-  Download, 
-  History, 
-  ChevronDown, 
+  Bell,
+  Settings,
+  PlusCircle,
+  Download,
+  History,
+  ChevronDown,
   ChevronLeft,
   Calendar,
   Egg,
   ScrollText,
-  Droplets, 
-  Fish, 
-  Leaf, 
-  Link as LinkIcon, 
-  ArrowLeftRight, 
+  Droplets,
+  Fish,
+  Leaf,
+  Link as LinkIcon,
+  ArrowLeftRight,
   Package,
   Pencil,
   MoreHorizontal,
@@ -40,7 +42,7 @@ import { motion, AnimatePresence } from 'motion/react';
 
 // --- Types ---
 
-const APP_NAME = "Sandwitchotek"
+const APP_NAME = "Sandwichotek"
 const SHOPPING_LIST_NAME = "Liste de courses"
 const RECIPES_NAME = "Recettes"
 const PRODUCTS_NAME = "Produits"
@@ -150,10 +152,10 @@ const INVENTORY_DATA: InventoryItem[] = [
 
 
 const INITIAL_PRODUCTS: Product[] = [
-    { id: '1', name: 'Tomate' },
-    { id: '2', name: 'Salade' },
-    { id: '3', name: 'Emmental rapé' },
-    { id: '4', name: 'Saucisse' },
+  { id: '1', name: 'Tomate' },
+  { id: '2', name: 'Salade' },
+  { id: '3', name: 'Emmental rapé' },
+  { id: '4', name: 'Saucisse' },
 ]
 
 const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (val: string) => void }) => {
@@ -184,7 +186,7 @@ const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (
   if (isEditing) {
     return (
       <div className="flex-1 min-w-0">
-      {/* className="flex items-center gap-2 w-full max-w-md"> */}
+        {/* className="flex items-center gap-2 w-full max-w-md"> */}
         <input
           ref={inputRef}
           type="text"
@@ -203,15 +205,15 @@ const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (
   }
 
   return (
-    <div 
+    <div
       onClick={() => setIsEditing(true)}
       className="group flex items-center justify-start cursor-pointer py-1.5 px-3 rounded-xl border-2 border-transparent hover:bg-surface-container-low animate-pop"
     >
       <span className="text-lg font-semibold text-on-surface tracking-tight">
         {value}
       </span>
-      <Pencil 
-        size={16} 
+      <Pencil
+        size={16}
         className="text-on-surface-variant opacity-100 group-hover:opacity-100 ml-2"
       />
     </div>
@@ -220,8 +222,26 @@ const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (
 
 // --- Components ---
 
-const Sidebar = ({ currentView, setView }: { currentView: ViewType, setView: (v: ViewType) => void }) => {
-  
+interface SidebarProps {
+  currentView: ViewType;
+  setView: (v: ViewType) => void;
+  isOpen: boolean;           // Nouvel état
+  setIsOpen: (o: boolean) => void; // Pour fermer
+}
+
+const Logo = () => {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="w-1 h-10 bg-primary rounded-xl flex items-center justify-center text-white"></div>
+      <div>
+        <h1 className="text-lg font-bold text-primary uppercase tracking-widest leading-none mb-1">{APP_NAME}</h1>
+        <p className="text-[0.65rem] text-on-surface-variant font-medium">Le bar, c'est mieux maintenant</p>
+      </div>
+    </div>
+  )
+}
+
+const Sidebar = ({ currentView, setView, isOpen, setIsOpen }: SidebarProps) => {
   const navItems = [
     { id: SIDEBAR_IDS.SHOPPING_LIST_NAME, icon: <ScrollText size={20} />, label: SHOPPING_LIST_NAME },
     { id: SIDEBAR_IDS.RECIPES_NAME, icon: <Utensils size={20} />, label: RECIPES_NAME },
@@ -231,64 +251,66 @@ const Sidebar = ({ currentView, setView }: { currentView: ViewType, setView: (v:
   ];
 
   return (
-    <aside className="h-screen w-64 fixed left-0 top-0 z-50 bg-surface-container-low border-r border-outline-variant/15 flex flex-col py-8">
-      <div className="px-6 mb-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-            {/* TODO: Ajouter le logo du bar */}
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-primary uppercase tracking-widest leading-none mb-1">{APP_NAME}</h1>
-            <p className="text-[0.65rem] text-on-surface-variant font-medium">Le bar, c'est mieux maintenant</p>
-          </div>
-        </div>
-      </div>
-      
-      <nav className="flex-1 space-y-1">
-        {navItems.map((item) => (
-          <button 
-            key={item.id}
-            onClick={() => {
-              // allow switching to catalog, recipes or productions
-              if (item.id === SIDEBAR_IDS.SHOPPING_LIST_NAME || item.id === SIDEBAR_IDS.RECIPES_NAME || item.id === SIDEBAR_IDS.PRODUCTS_NAME || item.id === SIDEBAR_IDS.ARTICLES_NAMES || item.id === SIDEBAR_IDS.PLANNING_NAME) {
-                setView(item.id as ViewType);
-              }
-            }}
-            className={`w-full group flex items-center py-3 px-6 transition-all relative text-left cursor-pointer ${
-              currentView === item.id 
-                ? 'text-primary font-semibold bg-white/50' 
-                : 'text-on-surface-variant font-medium hover:text-primary hover:bg-surface-container-high/50'
-            }`}
-          >
-            {currentView === item.id && (
-              <motion.div 
-                layoutId="activeNav"
-                className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full"
-              />
-            )}
-            <span className={`mr-4 ${currentView === item.id ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary'}`}>
-              {item.icon}
-            </span>
-            <span className="text-sm tracking-wide">{item.label}</span>
-          </button>
-        ))}
-      </nav>
+    <>
+      {/* Overlay : floute l'arrière-plan quand la sidebar est ouverte sur mobile */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden"
+          />
+        )}
+      </AnimatePresence>
 
-      <div className="mt-auto px-6 space-y-1">
-        <a href="#" className="group flex items-center py-2 text-tertiary font-medium hover:opacity-80 transition-all text-sm">
-          <LogOut size={18} className="mr-3" />
-          Déconnexion
-        </a>
-      </div>
-    </aside>
+      <aside className={`
+        fixed left-0 top-0 h-screen w-64 z-50 bg-surface-container-low border-r border-outline-variant/15 flex flex-col py-4 transition-transform duration-300 ease-in-out
+        ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
+        lg:translate-x-0
+      `}>
+        <div className="px-4 mb-10">
+          <Logo></Logo>  
+        </div>
+
+        <nav className="flex-1 space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => {
+                setView(item.id as ViewType);
+                setIsOpen(false); // Ferme la sidebar après clic sur mobile
+              }}
+              className={`w-full group flex items-center py-3 px-6 transition-all relative text-left ${currentView === item.id ? 'text-primary font-semibold bg-white/50' : 'text-on-surface-variant hover:bg-surface-container-high/50'
+                }`}
+            >
+              {currentView === item.id && (
+                <motion.div layoutId="activeNav" className="absolute left-0 top-0 bottom-0 w-1 bg-primary rounded-r-full" />
+              )}
+              <span className={`mr-4 ${currentView === item.id ? 'text-primary' : 'text-on-surface-variant group-hover:text-primary'}`}>
+                {item.icon}
+              </span>
+              <span className="text-sm tracking-wide">{item.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <div className="mt-auto px-6">
+          <a href="#" className="flex items-center py-2 text-tertiary font-medium text-sm">
+            <LogOut size={18} className="mr-3" /> Déconnexion
+          </a>
+        </div>
+      </aside>
+    </>
   );
 };
 
 const TopBar = ({ title }: { title: string }) => {
   return (
     <header className="w-full h-16 sticky top-0 z-40 bg-surface flex items-center justify-between px-12 max-w-[1440px] mx-auto">
-      
-      
+
+
       <div className="flex items-center gap-6">
         {/* Place holder pour une éventuelle topbar */}
       </div>
@@ -299,8 +321,8 @@ const TopBar = ({ title }: { title: string }) => {
 const ShoppingListView = () => {
   // TODO chargement dynamique de la liste et disponibilité des boutons
   return (
-    
-    <motion.div 
+
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -313,10 +335,10 @@ const ShoppingListView = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-8 md:grid-cols-[repeat(auto-fit,minmax(400px,1fr))]">
-  <div className="w-full">
-    <ShoppingListTable />
-  </div>
-</div>
+        <div className="w-full">
+          <ShoppingListTable />
+        </div>
+      </div>
     </motion.div>
   );
 };
@@ -360,9 +382,8 @@ const ShoppingListTable = () => {
                 </td>
                 <td className="px-4 py-5 text-sm text-on-surface-variant">{item.brand}</td>
                 <td className="px-6 py-5">
-                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${
-                    item.stock === 'Oui' ? 'bg-primary/10 text-primary' : 'bg-tertiary/10 text-tertiary'
-                  }`}>
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${item.stock === 'Oui' ? 'bg-primary/10 text-primary' : 'bg-tertiary/10 text-tertiary'
+                    }`}>
                     {item.stock}
                   </span>
                 </td>
@@ -406,47 +427,45 @@ const RecipeCreatorView = () => {
   const meals = ["Alpin", "Montagnard"]
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className="max-w-6xl mx-auto w-full"
     >
 
-      <header className="mb-12">
-        <h2 className="text-4xl font-medium tracking-tight mb-2">{RECIPES_NAME}</h2>
+      <header className="mb-6">
+        <h2 className="text-4xl font-medium tracking-tight">{RECIPES_NAME}</h2>
       </header>
-    
 
-      {/* Right Column: Recipe Builder */}
-      <div className="lg:col-span-8">
-        <section className="bg-surface-container-lowest rounded-xl p-8 shadow-sm h-full flex flex-col">
-          <div className="flex items-center justify-between py-2">
-            {/* <p className="inline-flex items-center cursor-pointer gap-3 group">AA</p> */}
-            <div className="relative">
-                      <select className="w-full appearance-none bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none">
-                        <option>Nouveau produit</option>
-                        {meals.map((meal) => ( 
-                          <option>{meal}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-                    </div>
+
+      <div className="">
+        <section className="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+          <div className="py-2">
+            <div className="relative w-full">
+              <select className="w-full p-2 appearance-none bg-surface-container-high/50 rounded-lg text-sm focus:ring-2 focus:ring-primary-light/50 cursor-pointer">
+                <option>Nouveau produit</option>
+                {meals.map((meal) => (
+                  <option>{meal}</option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+            </div>
           </div>
           <div className="flex items-center justify-between py-2 gap-4">
-            <ClickToEdit 
+            <ClickToEdit
               initialValue="Nom du plat"
               onSave={(newValue) => {
                 console.log("Nouveau nom :", newValue);
-              }} 
+              }}
             />
 
-            <label className="inline-flex items-center cursor-pointer gap-3 group">
-            <span className="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">
-              Veggie
-            </span>
-            <input type="checkbox" className="sr-only peer" />
-                <div className="relative w-11 h-6 rounded-full peer 
+            <label className="inline-flex items-center gap-4 cursor-pointer">
+              <span className="text-sm font-medium text-on-surface-variant group-hover:text-primary transition-colors">
+                Veggie
+              </span>
+              <input type="checkbox" className="sr-only peer" />
+              <div className="relative w-11 h-6 rounded-full peer 
                   bg-surface-container-high 
                   transition-colors duration-500 ease-in-out
                   peer-checked:bg-primary 
@@ -461,29 +480,27 @@ const RecipeCreatorView = () => {
                   after:w-4 
                   after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.4,0,0.2,1)]
                   peer-checked:after:translate-x-5">
-                </div>
+              </div>
             </label>
           </div>
 
-
-          {/* Ingredient Rows */}
-          <div className="flex-1 space-y-4">
+          <div className="space-y-4">
             <AnimatePresence initial={false}>
               {ingredients.map((ingredient) => (
-                <motion.div 
+                <motion.div
                   key={ingredient.id}
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-12 gap-4 items-end bg-surface-container-low/50 p-4 rounded-lg group hover:bg-surface-container-low overflow-hidden"
+                  className="grid grid-cols-7 gap-4 p-4 items-end rounded-lg bg-surface-container-low/50 hover:bg-surface-container-low overflow-hidden"
                 >
-                  <div className="col-span-6">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Ingrédient</label>
+                  <div className="col-span-3">
+                    <label className="block mb-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ingrédient</label>
                     <div className="relative">
-                      <select 
+                      <select
                         value={ingredient.productId}
                         // onChange={(e) => updateArticleProduct(article.id, e.target.value)}
-                        className="w-full appearance-none bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none"
+                        className="w-full px-4 py-3 rounded-lg appearance-none bg-white text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer"
                       >
                         {products.map((product) => (
                           <option key={product.id} value={product.id}>
@@ -491,22 +508,22 @@ const RecipeCreatorView = () => {
                           </option>
                         ))}
                       </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
                     </div>
                   </div>
-                  <div className="col-span-4">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Quantité</label>
+                  <div className="col-span-3">
+                    <label className="block mb-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Quantité</label>
                     <div className="relative flex items-center">
-                      <input 
-                        className="tabular-nums w-full bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-16 outline-none" 
-                        type="number" 
+                      <input
+                        className="tabular-nums w-full px-4 py-3 pr-16 bg-white rounded-lg text-sm focus:ring-2 focus:ring-primary-light/50"
+                        type="number"
                         defaultValue={ingredient.quantity}
                       />
                       <span className="absolute right-4 text-xs font-medium text-on-surface-variant">{ingredient.unit}</span>
                     </div>
                   </div>
-                  <div className="col-span-2 flex justify-end">
-                    <button 
+                  <div className="col-span-1 flex justify-center">
+                    <button
                       onClick={() => removeIngredient(ingredient.id)}
                       className="p-3 text-tertiary/40 hover:text-tertiary transition-colors"
                     >
@@ -518,17 +535,17 @@ const RecipeCreatorView = () => {
             </AnimatePresence>
           </div>
 
-          {/* Footer Actions */}
-          <div className="mt-12 pt-8 border-t border-outline-variant/10 flex justify-between items-center">
-          <button 
+          
+          <div className="flex justify-between items-center pt-4">
+            <button
               onClick={addIngredient}
-              className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80 transition-all"
+              className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80"
             >
               <PlusCircle size={16} />
               Ajouter un ingrédient
             </button>
             <div className="flex gap-4">
-              <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">Enregistrer</button>
+              <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98]">Enregistrer</button>
             </div>
           </div>
         </section>
@@ -538,7 +555,7 @@ const RecipeCreatorView = () => {
 };
 
 const ProductsView = () => {
-  
+
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS)
   const addProduct = () => {
     //TODO valeur par défaut
@@ -550,77 +567,76 @@ const ProductsView = () => {
   };
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       className="max-w-6xl mx-auto w-full"
     >
 
-      <header className="mb-12">
-        <h2 className="text-4xl font-medium tracking-tight mb-2">{PRODUCTS_NAME}</h2>
+      <header className="mb-6">
+        <h2 className="text-4xl font-medium tracking-tight">{PRODUCTS_NAME}</h2>
       </header>
-    
 
-      
-      <div className="bg-surface-container-lowest rounded-xl p-8 shadow-sm h-full flex flex-col gap-4">
-          <div className="relative w-full group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
-            <input 
-              className="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary-light/50 text-sm placeholder:text-on-surface-variant/60 outline-none transition-all" 
-              placeholder="Chercher un produit"
-              type="text"
-              // TODO Dynamiser
-            />
-          </div>
 
-          <div className="flex-1 space-y-4">
-            <AnimatePresence initial={false}>
-              {products.map((product) => (
-                <motion.div 
-                  key={product.id}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-12 gap-4 items-end bg-surface-container-low/50 p-4 rounded-lg group overflow-hidden"
-                >
-                  <div className="col-span-6">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Ingrédient</label>
-                    <div className="flex-1 min-w-0">
-                      <ClickToEdit
-                        initialValue={product.name}
-                        onSave={(newValue) => {
-                          console.log("Nouveau nom :", newValue);
-                        }}
-                      />
-                  </div>
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <button 
-                      onClick={() => removeProduct(product.id)}
-                      className="p-3 text-tertiary/40 hover:text-tertiary transition-colors"
-                    >
-                      <Trash2 size={20} />
-                    </button>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
 
-          {/* Footer Actions */}
-          <div className="mt-12 pt-8 border-t border-outline-variant/10 flex justify-between items-center">
-          <button 
-              onClick={addProduct}
-              className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80 transition-all"
-            >
-              <PlusCircle size={16} />
-              Ajouter un ingrédient
-            </button>
-            <div className="flex gap-4">
-              <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">Enregistrer</button>
-            </div>
+      <div className="p-8 h-full flex flex-col gap-4 bg-surface-container-lowest rounded-xl shadow-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
+          <input
+            className="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full focus:ring-2 focus:ring-primary-light/50 text-sm placeholder:text-on-surface-variant/60"
+            placeholder="Chercher un produit"
+            type="text"
+          // TODO Dynamiser
+          />
+        </div>
+
+        <div className="flex-col space-y-4">
+          <AnimatePresence initial={false}>
+            {products.map((product) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="grid grid-cols-3 gap-2 p-3 items-end bg-surface-container-low/50 rounded-lg overflow-hidden"
+              >
+                <div className="col-span-2">
+                  <label className="block px-3 mt-2 text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">Ingrédient</label>
+                  <div className="flex-1 min-w-0">
+                    <ClickToEdit
+                      initialValue={product.name}
+                      onSave={(newValue) => {
+                        console.log("Nouveau nom :", newValue);
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-span-1 flex justify-end">
+                  <button
+                    onClick={() => removeProduct(product.id)}
+                    className="p-3 text-tertiary/40 hover:text-tertiary transition-colors"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-between items-center pt-2">
+          <button
+            onClick={addProduct}
+            className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80"
+          >
+            <PlusCircle size={16} />
+            Ajouter un ingrédient
+          </button>
+          <div className="flex gap-4">
+            <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">Enregistrer</button>
           </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -646,7 +662,7 @@ const ArticlesView = () => {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS)
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -656,106 +672,106 @@ const ArticlesView = () => {
       <header className="mb-12">
         <h2 className="text-4xl font-medium tracking-tight mb-2">{ARTICLES_NAMES}</h2>
       </header>
-    
 
-      
+
+
       <div className="bg-surface-container-lowest rounded-xl p-8 shadow-sm h-full flex flex-col gap-4">
-          <div className="relative w-full group">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
-            <input 
-              className="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary-light/50 text-sm placeholder:text-on-surface-variant/60 outline-none transition-all" 
-              placeholder="Chercher un produit"
-              type="text"
-              // TODO Dynamiser
-            />
-          </div>
+        <div className="relative w-full group">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
+          <input
+            className="w-full pl-10 pr-4 py-2 bg-surface-container rounded-full border-none focus:ring-2 focus:ring-primary-light/50 text-sm placeholder:text-on-surface-variant/60 outline-none transition-all"
+            placeholder="Chercher un produit"
+            type="text"
+          // TODO Dynamiser
+          />
+        </div>
 
-          <div className="flex-1 space-y-4">
-            <AnimatePresence initial={false}>
-              {articles.map((article) => (
-                <motion.div 
-                  key={article.id}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="grid grid-cols-12 gap-4 items-end bg-surface-container-low/50 p-4 rounded-lg group overflow-hidden"
-                >
-                  <div className="col-span-4">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Nom de l'article</label>
-                    <div className="flex-1 min-w-0">
-                      <ClickToEdit
-                        initialValue={article.name}
-                        onSave={(newValue) => {
-                          console.log("Nouveau nom :", newValue);
-                        }} 
-                      />
-                    </div>
+        <div className="flex-1 space-y-4">
+          <AnimatePresence initial={false}>
+            {articles.map((article) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="grid grid-cols-12 gap-4 items-end bg-surface-container-low/50 p-4 rounded-lg group overflow-hidden"
+              >
+                <div className="col-span-4">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Nom de l'article</label>
+                  <div className="flex-1 min-w-0">
+                    <ClickToEdit
+                      initialValue={article.name}
+                      onSave={(newValue) => {
+                        console.log("Nouveau nom :", newValue);
+                      }}
+                    />
                   </div>
-                  <div className="col-span-6">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Ingrédient associé</label>
-                    <div className="relative">
-                      <select 
-                        value={article.productId}
-                        // onChange={(e) => updateArticleProduct(article.id, e.target.value)}
-                        className="w-full appearance-none bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none"
-                      >
-                        {products.map((product) => (
-                          <option key={product.id} value={product.id}>
-                            {product.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="col-span-4">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Marque</label>
-                    <div className="flex-1 min-w-0">
-                      <ClickToEdit
-                        initialValue={article.brand}
-                        onSave={(newValue) => {
-                          console.log("Nouveau nom :", newValue);
-                        }} 
-                      />
-                    </div>
-                  </div>
-                  <div className="col-span-4">
-                    <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Quantité</label>
-                    <div className="relative flex items-center">
-                      <input 
-                        className="tabular-nums w-full bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-16 outline-none" 
-                        type="number" 
-                        defaultValue={article.quantity}
-                      />
-                      <span className="absolute right-4 text-xs font-medium text-on-surface-variant">{article.unit}</span>
-                    </div>
-                  </div>
-                  <div className="col-span-2 flex justify-end">
-                    <button 
-                      onClick={() => removeArticle(article.id)}
-                      className="p-3 text-tertiary/40 hover:text-tertiary transition-colors"
+                </div>
+                <div className="col-span-6">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Ingrédient associé</label>
+                  <div className="relative">
+                    <select
+                      value={article.productId}
+                      // onChange={(e) => updateArticleProduct(article.id, e.target.value)}
+                      className="w-full appearance-none bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none"
                     >
-                      <Trash2 size={20} />
-                    </button>
+                      {products.map((product) => (
+                        <option key={product.id} value={product.id}>
+                          {product.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
                   </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+                </div>
+                <div className="col-span-4">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Marque</label>
+                  <div className="flex-1 min-w-0">
+                    <ClickToEdit
+                      initialValue={article.brand}
+                      onSave={(newValue) => {
+                        console.log("Nouveau nom :", newValue);
+                      }}
+                    />
+                  </div>
+                </div>
+                <div className="col-span-4">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-on-surface-variant mb-2">Quantité</label>
+                  <div className="relative flex items-center">
+                    <input
+                      className="tabular-nums w-full bg-white border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-16 outline-none"
+                      type="number"
+                      defaultValue={article.quantity}
+                    />
+                    <span className="absolute right-4 text-xs font-medium text-on-surface-variant">{article.unit}</span>
+                  </div>
+                </div>
+                <div className="col-span-2 flex justify-end">
+                  <button
+                    onClick={() => removeArticle(article.id)}
+                    className="p-3 text-tertiary/40 hover:text-tertiary transition-colors"
+                  >
+                    <Trash2 size={20} />
+                  </button>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
 
-          {/* Footer Actions */}
-          <div className="mt-12 pt-8 border-t border-outline-variant/10 flex justify-between items-center">
-          <button 
-              onClick={addArticle}
-              className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80 transition-all"
-            >
-              <PlusCircle size={16} />
-              Ajouter un ingrédient
-            </button>
-            <div className="flex gap-4">
-              <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">Enregistrer</button>
-            </div>
+        {/* Footer Actions */}
+        <div className="mt-12 pt-8 border-t border-outline-variant/10 flex justify-between items-center">
+          <button
+            onClick={addArticle}
+            className="flex items-center gap-2 text-primary font-semibold text-sm hover:opacity-80 transition-all"
+          >
+            <PlusCircle size={16} />
+            Ajouter un ingrédient
+          </button>
+          <div className="flex gap-4">
+            <button className="px-10 py-3 rounded-lg font-bold text-white signature-gradient shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all">Enregistrer</button>
           </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -764,7 +780,7 @@ const ArticlesView = () => {
 const PlanningView = () => {
   type ProdCard = { id: string; title: string; units: number; };
 
-  const days = ['Lundi','Mardi','Mercredi','Jeudi','Vendredi'];
+  const days = ['Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi'];
 
   const [meals, setMeals] = useState<Record<string, ProdCard[]>>(() => ({
     Lundi: [{ id: 'm1', title: 'Vosgien', units: 12 }],
@@ -792,7 +808,7 @@ const PlanningView = () => {
       [day]: [...(prev[day] || []), newCard]
     }));
   };
-  
+
   const removeMeal = (day: string, id: string) => {
     setMeals((prev) => ({
       ...prev,
@@ -800,7 +816,7 @@ const PlanningView = () => {
     }));
   };
 
-  {/* TODO options dynamiques */}
+  {/* TODO options dynamiques */ }
   const meals_names = ["Alpin", "Homard"]
   const dates = ["26 Oct.", "27 Oct.", "28 Oct.", "29 Oct.", "30 Oct."]
 
@@ -818,7 +834,7 @@ const PlanningView = () => {
         <div className="flex items-center bg-surface-container-low p-1 rounded-lg">
           {/* TODO ajouter boutons de navigation */}
           <button className="p-2 hover:bg-surface-container rounded transition-colors"><ChevronLeft size={18} /></button>
-          <div className="px-6 py-2"><span className="font-semibold text-sm">{dates[0]} - {dates[dates.length-1]}</span></div>
+          <div className="px-6 py-2"><span className="font-semibold text-sm">{dates[0]} - {dates[dates.length - 1]}</span></div>
           <button className="p-2 hover:bg-surface-container rounded transition-colors"><ChevronRight size={18} /></button>
         </div>
       </div>
@@ -830,42 +846,42 @@ const PlanningView = () => {
               <h3 className="font-label text-xs font-semibold uppercase tracking-widest text-on-surface-variant">{day}</h3>
               <p className="text-xs text-on-surface-variant/70">{dates[idx]}</p>
             </div>
-              <AnimatePresence>
+            <AnimatePresence>
               {(meals[day] || []).map((card) => (
                 <motion.div
-                key={card.id}
-                initial={{ opacity: 0, height: 0 }}
+                  key={card.id}
+                  initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: 'auto' }}
                   exit={{ opacity: 0, height: 0 }}
                   className="p-0">
-                    <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary/0 animate-pop">
+                  <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary/0 animate-pop">
                     <div className="relative py-2">
                       <select className="w-full appearance-none bg-surface-container border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none font-semibold text-on-surface mb-1">
                         <option>{card.title}</option>
-                        {meals_names.map((name) => ( 
+                        {meals_names.map((name) => (
                           <option>{name}</option>
                         ))}
                       </select>
-                      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
                     </div>
-                    
-                    
+
+
                     <div className="flex items-center justify-between w-full gap-2">
-                      
+
                       <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider shrink-0 text-center">
                         Quantité :
                       </span>
 
-                      <div className="flex-1 min-w-0"> 
-                        <ClickToEdit 
+                      <div className="flex-1 min-w-0">
+                        <ClickToEdit
                           initialValue={card.units}
-                          onSave={(newValue) => console.log(newValue)} 
+                          onSave={(newValue) => console.log(newValue)}
                         />
                       </div>
 
 
                       <div className="flex justify-end">
-                        <button 
+                        <button
                           className="p-2 text-tertiary/40 hover:text-tertiary transition-colors shrink-0"
                           onClick={() => removeMeal(day, card.id)}
                         >
@@ -876,19 +892,19 @@ const PlanningView = () => {
                   </div>
                 </motion.div>
               ))}
-              </AnimatePresence>
+            </AnimatePresence>
 
-              {/* dashed add card */}
-              <div className="py-0">
-                <button
-                  onClick={() => addCard(day)}
-                  className="w-full bg-surface-container-lowest p-4 rounded-xl border-dashed border-2 border-outline-variant/30 flex flex-col items-center justify-center hover:border-primary/50 transition-colors group cursor-pointer"
-                >
-                  <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary mb-2 transition-colors">+</span>
-                  <span className="text-[10px] uppercase font-bold tracking-widest material-symbols-outlined text-on-surface-variant group-hover:text-primary mb-2 transition-colors">Ajouter un plat</span>
-                </button>
-              </div>
+            {/* dashed add card */}
+            <div className="py-0">
+              <button
+                onClick={() => addCard(day)}
+                className="w-full bg-surface-container-lowest p-4 rounded-xl border-dashed border-2 border-outline-variant/30 flex flex-col items-center justify-center hover:border-primary/50 transition-colors group cursor-pointer"
+              >
+                <span className="material-symbols-outlined text-on-surface-variant group-hover:text-primary mb-2 transition-colors">+</span>
+                <span className="text-[10px] uppercase font-bold tracking-widest material-symbols-outlined text-on-surface-variant group-hover:text-primary mb-2 transition-colors">Ajouter un plat</span>
+              </button>
             </div>
+          </div>
         ))}
       </div>
     </motion.div>
@@ -897,29 +913,44 @@ const PlanningView = () => {
 
 export default function App() {
   const [view, setView] = useState<ViewType>(SIDEBAR_IDS.SHOPPING_LIST_NAME);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex">
-      <Sidebar currentView={view} setView={setView} />
-      
-      <main className="ml-64 flex-1 min-h-screen flex flex-col">
-        {/* <TopBar title={
-          view === 'catalog' ? 'Catalog & Ingredients' : (view === 'recipes' ? 'Recipe Creator' : 'Planning hebdomadaire')
-        } /> */}
-        
-        <div className="px-12 py-8 max-w-[1440px] mx-auto w-full flex-1">
+    <div className="min-h-screen flex bg-surface">
+      <Sidebar
+        currentView={view}
+        setView={setView}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+      />
+
+      <main className="flex-1 min-h-screen flex flex-col lg:ml-64 transition-all">
+        {/* Header mobile avec bouton Burger */}
+        <header className="flex justify-start h-16 bg-surface-container-low border-b border-outline-variant/15 lg:hidden">
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="p-4 text-on-surface-variant hover:bg-surface-container-high rounded-lg"
+          >
+            <Menu size={24} />
+          </button>
+          <div className="flex items-center gap-3">
+            <Logo></Logo>
+          </div>
+        </header>
+
+        <div className="px-6 lg:px-12 py-8 max-w-[1440px] mx-auto w-full flex-1">
           <AnimatePresence mode="wait">
-              {view === SIDEBAR_IDS.SHOPPING_LIST_NAME ? (
-                <ShoppingListView key={SIDEBAR_IDS.SHOPPING_LIST_NAME} />
-              ) : view === SIDEBAR_IDS.RECIPES_NAME ? (
-                <RecipeCreatorView key={SIDEBAR_IDS.RECIPES_NAME} />
-              ) : view === SIDEBAR_IDS.PRODUCTS_NAME ? (
-                <ProductsView key={SIDEBAR_IDS.PRODUCTS_NAME} />
-              ) : view === SIDEBAR_IDS.ARTICLES_NAMES ? (
-                <ArticlesView key={SIDEBAR_IDS.ARTICLES_NAMES} />
-              ) : (
-                <PlanningView key={SIDEBAR_IDS.PLANNING_NAME} />
-              )}
+            {view === SIDEBAR_IDS.SHOPPING_LIST_NAME ? (
+              <ShoppingListView key={SIDEBAR_IDS.SHOPPING_LIST_NAME} />
+            ) : view === SIDEBAR_IDS.RECIPES_NAME ? (
+              <RecipeCreatorView key={SIDEBAR_IDS.RECIPES_NAME} />
+            ) : view === SIDEBAR_IDS.PRODUCTS_NAME ? (
+              <ProductsView key={SIDEBAR_IDS.PRODUCTS_NAME} />
+            ) : view === SIDEBAR_IDS.ARTICLES_NAMES ? (
+              <ArticlesView key={SIDEBAR_IDS.ARTICLES_NAMES} />
+            ) : (
+              <PlanningView key={SIDEBAR_IDS.PLANNING_NAME} />
+            )}
           </AnimatePresence>
         </div>
       </main>
