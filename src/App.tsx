@@ -193,7 +193,7 @@ const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (
   return (
     <div
       onClick={() => setIsEditing(true)}
-      className="group flex items-center justify-start cursor-pointer py-1.5 px-3 rounded-xl border-2 border-transparent hover:bg-surface-container-low animate-pop"
+      className="group flex items-center justify-start cursor-pointer py-1 px-1 rounded-xl border-2 border-transparent hover:bg-surface-container-low animate-pop"
     >
       <span className="text-lg font-semibold text-on-surface tracking-tight">
         {value}
@@ -1010,49 +1010,53 @@ const PlanningView = () => {
             </div>
             <AnimatePresence>
               {(meals[day] || []).map((card) => (
-                <motion.div
-                  key={card.id}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="p-0">
-                  <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary/0 animate-pop">
-                    <div className="relative py-2">
-                      <select className="w-full appearance-none bg-surface-container border-none rounded-lg px-4 py-3 text-xs focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none font-semibold text-on-surface mb-1">
-                        <option>{card.title}</option>
-                        {meals_names.map((name) => (
-                          <option>{name}</option>
-                        ))}
-                      </select>
-                      <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
-                    </div>
+<motion.div
+  key={card.id}
+  initial={{ opacity: 0, height: 0 }}
+  animate={{ opacity: 1, height: 'auto' }}
+  exit={{ opacity: 0, height: 0 }}
+  className="p-0"
+>
+  <div className="bg-surface-container-lowest p-3 sm:p-4 rounded-xl shadow-sm border-l-4 border-primary/0 animate-pop">
+    {/* 1. Zone Select : On réduit un peu le padding interne */}
+    <div className="relative mb-3">
+      <select className="w-full appearance-none bg-surface-container border-none rounded-lg px-3 py-2.5 text-sm focus:ring-2 focus:ring-primary-light/50 pr-9 cursor-pointer outline-none font-semibold text-on-surface">
+        <option>{card.title}</option>
+        {meals_names.map((name) => (
+          <option key={name}>{name}</option>
+        ))}
+      </select>
+      <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none" />
+    </div>
 
+    <div className="grid grid-cols-1 min-[180px]:grid-cols-[1fr_auto] items-center gap-2">
+  
+  {/* Bloc Quantité : prend toute la place (1fr) quand c'est sur deux lignes */}
+  <div className="flex items-center gap-2 min-w-0">
+    <span className="text-[9px] uppercase font-bold text-on-surface-variant tracking-wider shrink-0">
+      Qté :
+    </span>
+    <div className="flex-1 min-w-0">
+      <ClickToEdit
+        initialValue={card.units.toString()}
+        onSave={(newValue) => console.log(newValue)}
+      />
+    </div>
+  </div>
 
-                    <div className="flex items-center justify-between w-full gap-2">
-
-                      <span className="text-[10px] uppercase font-bold text-on-surface-variant tracking-wider shrink-0 text-center">
-                        Quantité :
-                      </span>
-
-                      <div className="flex-1 min-w-0">
-                        <ClickToEdit
-                          initialValue={card.units.toString()}
-                          onSave={(newValue) => console.log(newValue)}
-                        />
-                      </div>
-
-
-                      <div className="flex justify-end">
-                        <button
-                          className="p-2 text-tertiary/40 hover:text-tertiary transition-colors shrink-0"
-                          onClick={() => removeMeal(day, card.id)}
-                        >
-                          <Trash2 size={18} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
+  {/* Bloc Poubelle : Se centre en mode 1 colonne, se cale à droite en mode 2 colonnes */}
+  <div className="flex justify-center min-[180px]:justify-end">
+    <button
+      className="p-2 text-tertiary/40 hover:text-tertiary hover:bg-tertiary/5 rounded-full transition-all shrink-0"
+      onClick={() => removeMeal(day, card.id)}
+      title="Supprimer"
+    >
+      <Trash2 size={16} />
+    </button>
+  </div>
+</div>
+  </div>
+</motion.div>
               ))}
             </AnimatePresence>
 
