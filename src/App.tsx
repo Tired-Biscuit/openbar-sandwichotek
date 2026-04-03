@@ -51,34 +51,19 @@ const PLANNING_NAME = "Planning hebdomadaire"
 
 
 const SIDEBAR_IDS = {
-  SHOPPING_LIST_NAME: "shoppinglist",
+  SHOPPING_LIST_NAME: 'shoppinglist',
   RECIPES_NAME: "recipes",
   PRODUCTS_NAME: "products",
   ARTICLES_NAMES: "articles",
   PLANNING_NAME: "planning",
-}
+} as const
 
 
 type ViewType = 'shoppinglist' | 'recipes' | 'products' | 'articles' | 'planning';
 
-interface InventoryItem {
-  id: string;
-  name: string;
-  price: number;
-  unit: string;
-  quantity: number;
-  quantityUnit: string;
-  shelf: string;
-  brand: string;
-  stock: 'Oui' | 'Non';
-}
+// --- Types ---
 
-interface AliasMapping {
-  term: string;
-  category: string;
-  options: string[];
-  selected: string;
-}
+
 
 interface RecipeIngredient {
   id: string;
@@ -101,54 +86,17 @@ interface Article {
   unit: string;
 }
 
-// --- Mock Data ---
-const INVENTORY_DATA: InventoryItem[] = [
-  {
-    id: '1',
-    name: 'Salade',
-    price: 4.20,
-    unit: 'unité',
-    quantity: 430,
-    quantityUnit: 'g',
-    shelf: 'Fruits et Légumes',
-    brand: 'Auchan rouge',
-    stock: 'Oui'
-  },
-  {
-    id: '2',
-    name: 'Tomates',
-    price: 5.50,
-    unit: 'kg',
-    quantity: 18,
-    quantityUnit: 'unité',
-    shelf: 'Fruits et Légumes',
-    brand: '',
-    stock: 'Oui'
-  },
-  {
-    id: '3',
-    name: 'Concombre',
-    price: 1.8,
-    unit: 'unité',
-    quantity: 2,
-    quantityUnit: 'unité',
-    shelf: 'Fruits et Légumes',
-    brand: '',
-    stock: 'Non'
-  },
-  {
-    id: '4',
-    name: 'Crème fraîche',
-    price: 3.2,
-    unit: '400g',
-    quantity: 370,
-    quantityUnit: 'g',
-    shelf: 'Produits laitiers',
-    brand: 'Pouce',
-    stock: 'Non'
-  }
-];
+interface ShoppingListItem {
+  name: string;
+  brand: string;
+  quantity: number;
+  unit: string;
+  shelf: string;
+  taken: true | false
+}
 
+
+// --- Mock Data ---
 
 
 const INITIAL_PRODUCTS: Product[] = [
@@ -156,6 +104,44 @@ const INITIAL_PRODUCTS: Product[] = [
   { id: '2', name: 'Salade' },
   { id: '3', name: 'Emmental rapé' },
   { id: '4', name: 'Saucisse' },
+]
+
+
+interface ShoppingList {
+  id: string;
+  date: string;
+  items: ShoppingListItem[];
+}
+
+// --- Mock Data ---
+const SHOPPING_DATA: ShoppingList[] = [
+  {
+    id: "SL-001",
+    date: "2026-03-25",
+    items: [
+      {name: 'Tomate', brand: 'Pouce', quantity: 12, unit: 'unité', shelf: 'Légumes', taken: true},
+      {name: 'Brie', brand: 'Pouce', quantity: 250, unit: 'g', shelf: 'Produits laitiers', taken: true},
+      {name: 'Oignon Rouge', brand: '', quantity: 2, unit: 'unité', shelf: 'Légumes', taken: false}
+    ]
+  },
+  {
+    id: "SL-002",
+    date: "2026-04-01",
+    items: [
+      {name: 'Tomate', brand: 'Pouce', quantity: 9, unit: 'unité', shelf: 'Légumes', taken: false},
+      {name: 'Comté', brand: 'Pouce', quantity: 420, unit: 'g', shelf: 'Produits laitiers', taken: true},
+      {name: 'Boeuf haché surgelé', brand: 'Pouce', quantity: 800, unit: 'g', shelf: 'Surgelés', taken: false}
+    ]
+  },
+  {
+    id: "SL-003",
+    date: "2026-03-10",
+    items: [
+      {name: 'Concombre', brand: '', quantity: 3, unit: 'g', shelf: 'Légumes', taken: false},
+      {name: 'Crème fraîche', brand: 'Pouce', quantity: 15, unit: 'cL', shelf: 'Produits laitiers', taken: true},
+      {name: 'Durum', brand: '', quantity: 8, unit: 'unité', shelf: 'Produits du monde', taken: false}
+    ]
+  }
 ]
 
 const ClickToEdit = ({ initialValue, onSave }: { initialValue: string, onSave: (val: string) => void }) => {
@@ -268,7 +254,7 @@ const Sidebar = ({ currentView, setView, isOpen, setIsOpen }: SidebarProps) => {
       <aside className={`
         fixed left-0 top-0 h-screen w-64 z-50 bg-surface-container-low border-r border-outline-variant/15 flex flex-col py-4 transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'} 
-        lg:translate-x-0
+        lg:translate-x-0 overflow-auto
       `}>
         <div className="px-4 mb-10">
           <Logo></Logo>  
@@ -318,6 +304,185 @@ const TopBar = ({ title }: { title: string }) => {
   );
 };
 
+const ShoppingRow: React.FC<{ list: ShoppingList }> = ({ list }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const [items, setItems] = useState(list.items);
+
+  const toggleItem = (index: number) => {
+    const newItems = [...items];
+    newItems[index] = { 
+      ...newItems[index], 
+      taken: !newItems[index].taken 
+    };
+    setItems(newItems);
+  };
+
+  return (
+    <>
+    {/* </>div className="w-full py-2"> */}
+      <tr 
+        onClick={() => setIsOpen(!isOpen)} 
+        className="hover:bg-surface-container-low transition-colors group cursor-pointer border-b border-outline-variant/50"
+      >
+        <td className="px-6 py-4">
+          <div className="gap-4 flex items-center justify-left">
+            <motion.div
+              animate={{ rotate: isOpen ? 90 : 0 }}
+              className="text-on-surface-variant"
+            >
+              <ChevronRight size={18} />
+            </motion.div>
+            <span className="font-medium text-sm text-on-surface">
+              {new Date(list.date).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+            </span>
+          </div>
+        </td>
+        <td className="px-6 text-sm font-mono text-primary/80">
+          #{list.id.slice(-6).toUpperCase()}
+        </td>
+        <td className="px-6 text-right">
+          <span className="text-sm text-on-surface-variant tabular-nums">
+            {items.length} <span className="text-[10px] uppercase font-bold tracking-tight">produits</span>
+          </span>
+        </td>
+        <td className="px-6 text-right">
+          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tighter ${
+            items.every(i => i.taken) ? 'bg-green-500/10 text-green-600' : 'bg-primary/10 text-primary'
+          }`}>
+            {items.filter(i => i.taken).length} / {items.length} PRIS
+          </span>
+        </td>
+      </tr>
+      
+      <AnimatePresence>
+        {isOpen && (
+          <tr key="details">
+            <td colSpan={4} className="p-0 bg-surface-container-low/20">
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                className=""
+              >
+                <div className="pb-2">
+                  <table className="w-full text-left border-collapse bg-surface-container-lowest rounded-b-lg shadow-custom">
+                    <thead>
+                      <tr className="border-b border-outline-variant">
+                        <th className="w-10 px-4 py-2"></th>
+                        <th className="px-4 py-2 text-[0.6rem] uppercase font-bold tracking-[0.15em] text-on-surface-variant/70">Article</th>
+                        <th className="px-4 py-2 text-[0.6rem] uppercase font-bold tracking-[0.15em] text-on-surface-variant/70">Marque</th>
+                        <th className="px-4 py-2 text-[0.6rem] uppercase font-bold tracking-[0.15em] text-on-surface-variant/70 text-right">Quantité</th>
+                        <th className="px-4 py-2 text-[0.6rem] uppercase font-bold tracking-[0.15em] text-on-surface-variant/70">Rayon</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-outline-variant/50">
+                      {items.map((item, idx) => (
+                        <tr 
+                          key={idx} 
+                          className={`text-xs transition-all ${item.taken ? 'opacity-40 bg-surface-container-low/30' : 'opacity-100'}`}
+                        >
+                          <td className="px-4 py-2.5 text-center">
+                            <input 
+                              type="checkbox" 
+                              checked={item.taken}
+                              onChange={() => toggleItem(idx)}
+                              onClick={(e) => e.stopPropagation()} 
+                              className="w-4 h-4 rounded border-outline-variant text-primary accent-primary cursor-pointer"
+                            />
+                          </td>
+                          
+                          <td className={`px-4 py-2.5 font-medium transition-all ${item.taken ? 'line-through text-on-surface-variant' : 'text-on-surface'}`}>
+                            {item.name}
+                          </td>
+                          
+                          <td className="px-4 py-2.5 text-on-surface-variant/80 italic">
+                            {item.brand || "—"}
+                          </td>
+                          
+                          <td className="px-4 py-2.5 text-right tabular-nums text-on-surface font-medium">
+                            {item.quantity} <span className="text-[10px] text-on-surface-variant font-normal">{item.unit}</span>
+                          </td>
+                          
+                          <td className="px-4 py-2.5 text-[10px] text-on-surface-variant/80 uppercase tracking-tight">
+                            {item.shelf}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </motion.div>
+            </td>
+          </tr>
+        )}
+      </AnimatePresence>
+    </>
+  );
+};
+
+const ShoppingListViewv2 = () => {
+  const sortedData = [...SHOPPING_DATA].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="max-w-6xl mx-auto w-full"
+    >
+      <header className="mb-6">
+        <h2 className="text-4xl font-medium tracking-tight">{SHOPPING_LIST_NAME}</h2>
+      </header>
+      <section className="bg-surface-container-lowest rounded-xl p-4 shadow-sm">
+      <div className="w-full mb-4 border-b border-outline-variant/10 flex items-center justify-between">
+        <h3 className="font-semibold text-on-surface text-lg">Historique des courses</h3>
+        <span className="text-xs text-on-surface-variant font-medium bg-surface-container-high px-2 py-1 rounded">
+          {sortedData.length} listes au total
+        </span>
+      </div>
+
+      {/* Table */}
+      <div className="rounded-t-lg bg-surface-container-high border-outline-variant/50">
+        <table className="w-full table-auto md:table-fixed">
+          <thead>
+            <tr className="border-b border-outline-variant">
+              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold text-on-surface-variant text-left">Date de la liste</th>
+              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold text-on-surface-variant text-left">Référence</th>
+              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold text-on-surface-variant text-right">Volume</th>
+              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold text-on-surface-variant text-right">Statut</th>
+            </tr>
+          </thead>
+          <tbody className="bg-surface-container-low">
+            {sortedData.map((list) => (
+              <ShoppingRow key={list.id} list={list} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Footer / Pagination */}
+      <div className="px-6 py-6 bg-surface-container-high flex items-center justify-between rounded-b-lg border-outline-variant/50">
+        {/* <button className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors cursor-pointer disabled:opacity-30">
+          Précédent
+        </button>
+        <div className="flex gap-2">
+          <span className="w-7 h-7 flex items-center justify-center bg-primary text-on-primary text-[10px] font-bold rounded-full shadow-sm">1</span>
+          <span className="w-7 h-7 flex items-center justify-center text-on-surface-variant text-[10px] font-bold hover:bg-surface-container-high rounded-full cursor-pointer transition-all">2</span>
+        </div>
+        <button className="text-xs font-semibold text-on-surface-variant hover:text-primary transition-colors cursor-pointer">
+          Suivant
+        </button> */}
+      </div>
+      </section>
+    </motion.div>
+  );
+};
+
+
 const ShoppingListView = () => {
   // TODO chargement dynamique de la liste et disponibilité des boutons
   return (
@@ -355,16 +520,13 @@ const ShoppingListTable = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-surface-container-low/50">
-              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant">Product Name</th>
-              <th className="px-4 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant text-right">Wholesale Price</th>
-              <th className="px-4 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant text-right">Quantity</th>
-              <th className="px-4 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant">Shelf</th>
-              <th className="px-4 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant">Brand</th>
-              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant">En stock</th>
+              <th className="px-6 py-4 text-[0.65rem] uppercase font-bold tracking-widest text-on-surface-variant">Date de la liste de courses</th>
+              {/* Autres infos de la liste de course */}
             </tr>
           </thead>
           <tbody className="divide-y divide-outline-variant/5">
-            {INVENTORY_DATA.map((item) => (
+            {/* Affichage des éléments de l'inventaire à remplacer par la liste des listes de course (table principale)*/}
+            {/* {SHOPPING_DATA.map((item) => (
               <tr key={item.id} className="hover:bg-surface-container-low transition-colors group cursor-pointer">
                 <td className="px-6 py-5">
                   <div className="flex items-center gap-3">
@@ -388,7 +550,7 @@ const ShoppingListTable = () => {
                   </span>
                 </td>
               </tr>
-            ))}
+            ))} */}
           </tbody>
         </table>
       </div>
@@ -580,7 +742,7 @@ const ProductsView = () => {
 
 
 
-      <div className="p-8 h-full flex flex-col gap-4 bg-surface-container-lowest rounded-xl shadow-sm">
+      <div className="p-4 h-full flex flex-col gap-4 bg-surface-container-lowest rounded-xl shadow-sm">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
           <input
@@ -652,7 +814,7 @@ const ArticlesView = () => {
 
   const addArticle = () => {
     //TODO valeur par défaut
-    setArticles([...articles, { id: Date.now().toString(), name: '', vendor: '', quantity: 0, unit: 'units' }]);
+    setArticles([...articles, { id: Date.now().toString(), name: '', productId: '', brand: '', quantity: 0, unit: 'units' }]);
   };
 
   const removeArticle = (id: string) => {
@@ -675,7 +837,7 @@ const ArticlesView = () => {
 
 
 
-      <div className="bg-surface-container-lowest rounded-xl p-8 shadow-sm h-full flex flex-col gap-4">
+      <div className="p-4 bg-surface-container-lowest rounded-xl shadow-sm h-full flex flex-col gap-4">
         <div className="relative w-full group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant size-4" />
           <input
@@ -856,7 +1018,7 @@ const PlanningView = () => {
                   className="p-0">
                   <div className="bg-surface-container-lowest p-4 rounded-xl shadow-sm border-l-4 border-primary/0 animate-pop">
                     <div className="relative py-2">
-                      <select className="w-full appearance-none bg-surface-container border-none rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none font-semibold text-on-surface mb-1">
+                      <select className="w-full appearance-none bg-surface-container border-none rounded-lg px-4 py-3 text-xs focus:ring-2 focus:ring-primary-light/50 pr-10 cursor-pointer outline-none font-semibold text-on-surface mb-1">
                         <option>{card.title}</option>
                         {meals_names.map((name) => (
                           <option>{name}</option>
@@ -874,7 +1036,7 @@ const PlanningView = () => {
 
                       <div className="flex-1 min-w-0">
                         <ClickToEdit
-                          initialValue={card.units}
+                          initialValue={card.units.toString()}
                           onSave={(newValue) => console.log(newValue)}
                         />
                       </div>
@@ -915,6 +1077,19 @@ export default function App() {
   const [view, setView] = useState<ViewType>(SIDEBAR_IDS.SHOPPING_LIST_NAME);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    if (isSidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Nettoyage si le composant est démonté
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isSidebarOpen]);
+
   return (
     <div className="min-h-screen flex bg-surface">
       <Sidebar
@@ -941,7 +1116,7 @@ export default function App() {
         <div className="px-6 lg:px-12 py-8 max-w-[1440px] mx-auto w-full flex-1">
           <AnimatePresence mode="wait">
             {view === SIDEBAR_IDS.SHOPPING_LIST_NAME ? (
-              <ShoppingListView key={SIDEBAR_IDS.SHOPPING_LIST_NAME} />
+              <ShoppingListViewv2 key={SIDEBAR_IDS.SHOPPING_LIST_NAME} />
             ) : view === SIDEBAR_IDS.RECIPES_NAME ? (
               <RecipeCreatorView key={SIDEBAR_IDS.RECIPES_NAME} />
             ) : view === SIDEBAR_IDS.PRODUCTS_NAME ? (

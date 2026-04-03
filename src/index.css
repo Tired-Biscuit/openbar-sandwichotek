@@ -23,6 +23,12 @@
   --color-tertiary-container: #fc7c78;
 }
 
+@theme {
+  --shadow-custom: 0px 6px 10px -2px rgb(0 0 0 / 0.15), 0px 6px 10px 3px rgb(0 0 0 / 0.02);
+  
+}
+
+
 @layer base {
   body {
     @apply bg-surface text-on-surface font-sans antialiased;
